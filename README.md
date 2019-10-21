@@ -2,17 +2,17 @@
 HTRC-Features [![Build Status](https://travis-ci.org/htrc/htrc-feature-reader.svg?branch=master)](https://travis-ci.org/htrc/htrc-feature-reader) [![PyPI version](https://badge.fury.io/py/htrc-feature-reader.svg)](https://badge.fury.io/py/htrc-feature-reader) [![Anaconda-Server Badge](https://anaconda.org/htrc/htrc-feature-reader/badges/installer/conda.svg)](https://anaconda.org/htrc/htrc-feature-reader)
 =============
 
-Tools for working with the [HTRC Extracted Features dataset](https://sharc.hathitrust.org/features), a dataset of page-level text features extracted from 13.7 million digitized works.
+Tools for working with the [HTRC Extracted Features dataset](https://analytics.hathitrust.org/datasets), a dataset of page-level text features extracted from 13.7 million digitized works.
 
 This library provides a `FeatureReader` for parsing files, which are handled as `Volume` objects with collections of `Page` objects. Volumes provide access to metadata (e.g. language), volume-wide feature information (e.g. token counts), and access to Pages. Pages allow you to easily parse page-level features, particularly token lists.
 
-This library makes heavy use of [Pandas](pandas.pydata.org), returning many data representations as DataFrames. This is the leading way of dealing with structured data in Python, so this library doesn't try to reinvent the wheel. Since refactoring around Pandas, the primary benefit of using the HTRC Feature Reader is performance: reading the json structures and parsing them is generally faster than custom code. You also get convenient access to common information, such as case-folded token counts or part-of-page specific character counts. Details of the public methods provided by this library can be found in the [HTRC Feature Reader docs](http://htrc.github.io/htrc-feature-reader/htrc_features/feature_reader.m.html).
+This library makes heavy use of [Pandas](https://pandas.pydata.org/), returning many data representations as DataFrames. This is the leading way of dealing with structured data in Python, so this library doesn't try to reinvent the wheel. Since refactoring around Pandas, the primary benefit of using the HTRC Feature Reader is performance: reading the json structures and parsing them is generally faster than custom code. You also get convenient access to common information, such as case-folded token counts or part-of-page specific character counts. Details of the public methods provided by this library can be found in the [HTRC Feature Reader docs](http://htrc.github.io/htrc-feature-reader/htrc_features/feature_reader.m.html).
 
 **Table of Contents**: [Installation](#Installation) | [Usage](#Usage) | 
 [Additional Notes](#Additional-Notes)
 
 **Links**: 
-[HTRC Feature Reader Documentation](http://htrc.github.io/htrc-feature-reader/htrc_features/feature_reader.m.html) | [HTRC Extracted Features Dataset](https://sharc.hathitrust.org/features)
+[HTRC Feature Reader Documentation](http://htrc.github.io/htrc-feature-reader/htrc_features/feature_reader.m.html) | [HTRC Extracted Features Dataset](https://analytics.hathitrust.org/datasets)
 
 **Citation**:
 Peter Organisciak and Boris Capitanu, "Text Mining in Python through the HTRC Feature Reader," *Programming Historian*, (22 November 2016), http://programminghistorian.org/lessons/text-mining-with-extracted-features.
@@ -28,7 +28,7 @@ To install,
 
 That's it! This library is written for Python 2.7 and 3.0+. For Python beginners, you'll need [pip](https://pip.pypa.io/en/stable/installing/).
 
-Alternately, if you are using [Anaconda](https://www.continuum.io/downloads), you can install with
+Alternately, if you are using [Anaconda](https://www.anaconda.com/distribution/), you can install with
 
 ```bash
     conda install -c htrc htrc-feature-reader
@@ -46,7 +46,7 @@ Optional: [installing the development version](#Installing-the-development-versi
 
 ### Reading feature files
 
-The easiest way to start using this library is to use the [FeatureReader](http://htrc.github.io/htrc-feature-reader/htrc_features/feature_reader.m.html#htrc_features.feature_reader.FeatureReader) interface, which takes a list to Extracted Features files.
+The easiest way to start using this library is to use the [FeatureReader](https://wiki.htrc.illinois.edu/display/COM/Extracted+Features+Dataset) interface, which takes a list to Extracted Features files.
 
 
 ```python
@@ -106,7 +106,7 @@ for vol in fr:
     Pride and prejudice.
 
 
-This downloads the file temporarily, using the HTRC's web-based download link (e.g. https://data.analytics.hathitrust.org/features/get?download-id={{URL}}). One good pairing with this feature is the [HTRC Python SDK](https://github.com/htrc/HTRC-PythonSDK)'s functionality for downloading collections. 
+This downloads the file temporarily, using the HTRC's web-based download link (e.g. https://wiki.htrc.illinois.edu/display/COM/Downloading+Extracted+Features). One good pairing with this feature is the [HTRC Python SDK](https://github.com/htrc/HTRC-PythonSDK)'s functionality for downloading collections. 
 
 For example, I have a small collection of knitting-related books at https://babel.hathitrust.org/cgi/mb?a=listis&c=1174943610. To read the feature files for those books:
 
