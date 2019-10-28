@@ -46,7 +46,7 @@ Optional: [installing the development version](#Installing-the-development-versi
 
 ### Reading feature files
 
-The easiest way to start using this library is to download the datasets [here](http://data.htrc.illinois.edu/htrc-ef-access/get?action=download-ids&id=mdp.49015000795071&output=json) and [here](http://data.htrc.illinois.edu/htrc-ef-access/get?action=download-ids&id={{htid}}&output=json). And then, put them in the same file as where you put ipython or jupyter files. If you want to create a new folder to store these dataset, remember to specify the position of accessing dataset by `paths = ['foldername/datasetname1.json.bz2', 'foldername/datasetname2.json.bz2']`
+The easiest way to start using this library is to download the datasets [here](http://data.htrc.illinois.edu/htrc-ef-access/get?action=download-ids&id=mdp.49015000795071&output=json) and [here](http://data.htrc.illinois.edu/htrc-ef-access/get?action=download-ids&id={{htid}}&output=json). And then, put them in the same file as where you put ipython or jupyter files. If you want to create a new folder to store these dataset, remember to specify the position of accessing dataset by `paths = ['foldername/datasetname1.json']`
 
 
 ```python
