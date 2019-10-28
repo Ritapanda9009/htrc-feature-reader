@@ -108,6 +108,7 @@ for vol in fr:
 This downloads the file temporarily, using the HTRC's web-based download link (e.g. https://wiki.htrc.illinois.edu/display/COM/Downloading+Extracted+Features). One good pairing with this feature is the [HTRC Python SDK](https://github.com/htrc/HTRC-PythonSDK)'s functionality for downloading collections. 
 
 For example, I have a small collection of knitting-related books at https://babel.hathitrust.org/cgi/mb?a=listis&c=1174943610. To read the feature files for those books:
+
 Here, you need to install `htrc` library by Anaconda at first, which is a separate library from `htrc_features`.
 
 ```bash
