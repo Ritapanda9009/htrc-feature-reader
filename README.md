@@ -46,18 +46,17 @@ Optional: [installing the development version](#Installing-the-development-versi
 
 ### Reading feature files
 
-The easiest way to start using this library is to use the [FeatureReader](https://wiki.htrc.illinois.edu/display/COM/Extracted+Features+Dataset) interface, which takes a list to Extracted Features files.
+The easiest way to start using this library is to download the datasets [here](http://data.htrc.illinois.edu/htrc-ef-access/get?action=download-ids&id=mdp.49015000795071&output=json) and [here](http://data.htrc.illinois.edu/htrc-ef-access/get?action=download-ids&id={{htid}}&output=json). And then, put them in the same file as where you put ipython or jupyter files. If you want to create a new folder to store these dataset, remember to specify the position of accessing dataset by `paths = ['foldername/datasetname1.json.bz2', 'foldername/datasetname2.json.bz2']`
 
 
 ```python
-import glob
 import pandas as pd
 from htrc_features import FeatureReader
-paths = glob.glob('data/PZ-volumes/*.json.bz2')
+paths = ['htrc-metadata-export.json']
 # Here we're loading five paths, for brevity
 fr = FeatureReader(paths[:5])
 for vol in fr.volumes():
-    print("%s - %s" % (vol.id, vol.title))
+    print(vol.id, vol.title)
 ```
 
     hvd.32044010273894 - The ballet dancer, and On guard,
@@ -70,7 +69,7 @@ for vol in fr.volumes():
 Iterating on `FeatureReader` returns `Volume` objects. This is simply an easy way to access `feature_reader.volumes()`.
 Wherever possible, this library tries not to hold things in memory, so most of the time you want to iterate rather than casting to a list.
 In addition to memory issues, since each volume needs to be read from a file and initialized, it will be slow. 
-_Woe to whomever tries `list(FeatureReader.volumes())`_.
+Try to avoid use `list(FeatureReader.volumes())`.
 
 The method for creating a path list with 'glob' is just one way to do so.
 For large sets, it's better to just have a text file of your paths, and read it line by line.
@@ -109,6 +108,11 @@ for vol in fr:
 This downloads the file temporarily, using the HTRC's web-based download link (e.g. https://wiki.htrc.illinois.edu/display/COM/Downloading+Extracted+Features). One good pairing with this feature is the [HTRC Python SDK](https://github.com/htrc/HTRC-PythonSDK)'s functionality for downloading collections. 
 
 For example, I have a small collection of knitting-related books at https://babel.hathitrust.org/cgi/mb?a=listis&c=1174943610. To read the feature files for those books:
+Here, you need to install `htrc` library by Anaconda at first, which is a separate library from `htrc_features`.
+
+```bash
+    conda install -c htrc htrc
+```
 
 
 ```python
@@ -157,7 +161,6 @@ As a convenience, `Volume.year` returns `Volume.pub_date`:
 
 
 
-`Volume` objects have an page genrator method for pages, through `Volume.pages()`. Iterating through pages using this generator only keeps one page at a time in memory, and again it is preferable to reading all the pages into the list at once. Unlike volumes, your computer can probably hold all the pages of a single volume in memory, so it is not dire if you try to read them into a list.
 
 Like with the `FeatureReader`, you can also access the page generator by iterating directly on the object (i.e. `for page in vol`). Python beginners may find that using `vol.pages()` is more clear as to what is happening.
 
@@ -208,7 +211,7 @@ print("METADATA FIELDS: " + ", ".join(vol.metadata.keys()))
     METADATA FIELDS: _version_, htrc_charCount, title, htrc_volumePageCountBin, publishDate, title_a, mainauthor, author_only, oclc, authorSort, country_of_pub, author, htrc_gender, language, ht_id, publisher, author_top, publishDateRange, htrc_pageCount, title_top, callnosort, publication_place, topic, htsource, htrc_wordCount, title_ab, callnumber, fullrecord, htrc_volumeWordCountBin, format, lccn, genre, htrc_genderMale, topic_subject, topicStr, geographic, published, sdrnum, id
 
 
-_At large-scales, using `vol.metadata` is an impolite and inefficient amount of server pinging; there are better ways to query the API than one volume at a time. Read about the [HTRC Solr Proxy](https://www.hathitrust.org/htrc/solr-api)._
+_At large-scales, using `vol.metadata` is an impolite and inefficient amount of server pinging; there are better ways to query the API than one volume at a time. 
 
 Another source of bibliographic metadata is the HathiTrust Bib API. You can access this information through the URL returned with `vol.ht_bib_url`:
 
@@ -458,57 +461,9 @@ data/da
 
 Volume.term_page_freqs provides a wide DataFrame resembling a matrix, where terms are listed as columns, pages are listed as rows, and the values correspond to the term frequency (or page page frequency with `page_freq=true`).
 Volume.term_volume_freqs() simply sums these.
+
+For large jobs, you'll want to use multiprocessing or multithreading to speed up your process. Please see the steps of Multiprocessing in the [example folder](https://github.com/htrc/htrc-feature-reader/tree/master/examples).
  
-### Multiprocessing
-
-For large jobs, you'll want to use multiprocessing or multithreading to speed up your process. This is left up to your preferred method, either within Python or by spawning multiple scripts from the command line. Here are two approaches that I like.
-
-#### Dask
-
-Dask offers easy multithreading (shared resources) and multiprocessing (separate processes) in Python, and is particularly convenient because it includes a subset of Pandas DataFrames.
-
-Here is a minimal example, that lazily loads token frequencies from a list of volume IDs, and counts them up by part of speech tag.
-
-```python
-import dask.dataframe as dd
-from dask import delayed
-
-def get_tokenlist(vol):
-    ''' Load a one volume feature reader, get that volume, and return its tokenlist '''
-    return FeatureReader(ids=[volid]).first().tokenlist()
-
-delayed_dfs = [delayed(get_tokenlist)(volid) for volid in volids]
-
-# Create a dask
-ddf = (dd.from_delayed(delayed_dfs)
-         .reset_index()
-         .groupby('pos')[['count']]
-         .sum()
-      )
-
-# Run processing
-ddf.compute()
-```
-
-Here is an example of 78 volumes being processed in 24 seconds with 31 threads:
-
-![Counting POS in 78 books about knitting](data/dask-progress.png)
-
-This example used multithreading. Due to the nature of Python, certain functions won't parallelize well. In our case, the part where the JSON is read from the file and converted to a DataFrame (the light green parts of the graphic) won't speed up because Python dicts lock the Global Interpreter Lock (GIL). However, because Pandas releases the GIL, nearly everything you do after parsing the JSON will be very quick.
-
-To better understand what happens when `ddf.compute()`, here is a graph for 4 volumes:
-
-![](data/dask-graph.png)
-
-
-#### GNU Parallel
-As an alternative to multiprocessing in Python, my preference is to have simpler Python scripts and to use GNU Parallel on the command line. To do this, you can set up your Python script to take variable length arguments of feature file paths, and to print to stdout.
-
-This psuedo-code shows how that you'd use parallel, where the number of parallel processes is 90% the number of cores, and 50 paths are sent to the script at a time (if you send too little at a time, the initialization time of the script can add up).
-
-```bash
-find feature-files/ -name '*json.bz2' | parallel --eta --jobs 90% -n 50 python your_script.py >output.txt
-```
 
 ## Additional Notes
 
